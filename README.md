@@ -1,4 +1,4 @@
-# Shopping Cart
+# Shopping Cart DB Integration
 
 A REST API built with Express, Sequelize, and PostgreSQL. Manages users, products, and cart items with full CRUD operations.
 
@@ -6,10 +6,10 @@ A REST API built with Express, Sequelize, and PostgreSQL. Manages users, product
 
 ## Tech Stack
 
-- Node.js
-- Express
-- Sequelize
-- PostgreSQL
+Node.js
+Express
+Sequelize
+PostgreSQL
 
 ---
 
