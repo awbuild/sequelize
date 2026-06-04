@@ -1,0 +1,689 @@
+{
+	"info": {
+		"_postman_id": "shopping-cart-api-sequelize",
+		"name": "Shopping Cart API (Sequelize)",
+		"description": "Complete API collection for testing the Shopping Cart API with PostgreSQL and Sequelize. Run requests in order — they depend on each other.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Setup",
+			"item": [
+				{
+					"name": "Get All Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response is an array', function () {",
+									"    const data = pm.response.json();",
+									"    pm.expect(Array.isArray(data)).to.be.true;",
+									"});",
+									"",
+									"pm.test('Response time is less than 500ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(500);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response contains user data', function () {",
+									"    const res = pm.response.json();",
+									"    pm.expect(res).to.have.property('id');",
+									"    pm.expect(res).to.have.property('name');",
+									"    pm.expect(res).to.have.property('email');",
+									"    pm.expect(res).to.have.property('createdAt');",
+									"});",
+									"",
+									"pm.test('Email is converted to lowercase', function () {",
+									"    const res = pm.response.json();",
+									"    pm.expect(res.email).to.match(/^[a-z0-9@._-]+$/);",
+									"});",
+									"",
+									"pm.test('Name matches request data', function () {",
+									"    const res = pm.response.json();",
+									"    pm.expect(res.name).to.eql('John Doe');",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    pm.collectionVariables.set('user_id', pm.response.json().id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"address\": \"123 Main St, Springfield, IL\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('User has required fields', function () {",
+									"    const user = pm.response.json();",
+									"    pm.expect(user).to.have.property('id');",
+									"    pm.expect(user).to.have.property('name');",
+									"    pm.expect(user).to.have.property('email');",
+									"    pm.expect(user).to.have.property('createdAt');",
+									"    pm.expect(user).to.have.property('updatedAt');",
+									"});",
+									"",
+									"pm.test('User ID matches requested ID', function () {",
+									"    const user = pm.response.json();",
+									"    pm.expect(user.id).to.eql(parseInt(pm.collectionVariables.get('user_id')));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{user_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "{{user_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Address was updated', function () {",
+									"    const user = pm.response.json();",
+									"    pm.expect(user.address).to.eql('456 Oak Ave, Chicago, IL');",
+									"});",
+									"",
+									"pm.test('UpdatedAt timestamp is more recent', function () {",
+									"    const user = pm.response.json();",
+									"    pm.expect(new Date(user.updatedAt).getTime()).to.be.at.least(new Date(user.createdAt).getTime());",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"address\": \"456 Oak Ave, Chicago, IL\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/{{user_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "{{user_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Products",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response is an array', function () {",
+									"    const data = pm.response.json();",
+									"    pm.expect(Array.isArray(data)).to.be.true;",
+									"});",
+									"",
+									"pm.test('Products have required fields', function () {",
+									"    const products = pm.response.json();",
+									"    if (products.length > 0) {",
+									"        const p = products[0];",
+									"        pm.expect(p).to.have.property('name');",
+									"        pm.expect(p).to.have.property('description');",
+									"        pm.expect(p).to.have.property('price');",
+									"        pm.expect(p).to.have.property('category');",
+									"        pm.expect(p).to.have.property('inStock');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/products",
+							"host": ["{{base_url}}"],
+							"path": ["api", "products"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Product data matches request', function () {",
+									"    const res = pm.response.json();",
+									"    pm.expect(res.name).to.eql('Wireless Mouse');",
+									"    pm.expect(res.category).to.eql('Electronics');",
+									"});",
+									"",
+									"pm.test('Product inStock defaults to true', function () {",
+									"    const res = pm.response.json();",
+									"    pm.expect(res.inStock).to.be.true;",
+									"});",
+									"",
+									"pm.test('Category is valid enum value', function () {",
+									"    const res = pm.response.json();",
+									"    const valid = ['Electronics', 'Clothing', 'Books', 'Home', 'Sports'];",
+									"    pm.expect(valid).to.include(res.category);",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    pm.collectionVariables.set('product_id', pm.response.json().id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Wireless Mouse\",\n  \"description\": \"Ergonomic wireless mouse with USB receiver and long battery life\",\n  \"price\": 29.99,\n  \"category\": \"Electronics\",\n  \"inStock\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/products",
+							"host": ["{{base_url}}"],
+							"path": ["api", "products"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Product has required fields', function () {",
+									"    const p = pm.response.json();",
+									"    pm.expect(p).to.have.property('id');",
+									"    pm.expect(p).to.have.property('name');",
+									"    pm.expect(p).to.have.property('description');",
+									"    pm.expect(p).to.have.property('price');",
+									"    pm.expect(p).to.have.property('category');",
+									"    pm.expect(p).to.have.property('inStock');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/products/{{product_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "products", "{{product_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Price was updated', function () {",
+									"    const p = pm.response.json();",
+									"    pm.expect(Number(p.price)).to.eql(24.99);",
+									"});",
+									"",
+									"pm.test('InStock status was updated', function () {",
+									"    const p = pm.response.json();",
+									"    pm.expect(p.inStock).to.be.false;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"price\": 24.99,\n  \"inStock\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/products/{{product_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "products", "{{product_id}}"]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Create users and products first, before cart item tests"
+		},
+		{
+			"name": "2. Cart Items",
+			"item": [
+				{
+					"name": "Add to Cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Cart item created with correct data', function () {",
+									"    const res = pm.response.json();",
+									"    pm.expect(res).to.have.property('id');",
+									"    pm.expect(res.quantity).to.eql(2);",
+									"});",
+									"",
+									"pm.test('User and Product are included', function () {",
+									"    const res = pm.response.json();",
+									"    pm.expect(res).to.have.property('User');",
+									"    pm.expect(res).to.have.property('Product');",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    pm.collectionVariables.set('cart_item_id', pm.response.json().id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": {{user_id}},\n  \"productId\": {{product_id}},\n  \"quantity\": 2\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/cart-items",
+							"host": ["{{base_url}}"],
+							"path": ["api", "cart-items"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Cart Items",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response is an array', function () {",
+									"    const data = pm.response.json();",
+									"    pm.expect(Array.isArray(data)).to.be.true;",
+									"});",
+									"",
+									"pm.test('Cart items have included User and Product', function () {",
+									"    const items = pm.response.json();",
+									"    if (items.length > 0) {",
+									"        const item = items[0];",
+									"        pm.expect(item).to.have.property('User');",
+									"        pm.expect(item).to.have.property('Product');",
+									"        pm.expect(item).to.have.property('quantity');",
+									"        if (item.User) {",
+									"            pm.expect(item.User).to.have.property('name');",
+									"        }",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/cart-items",
+							"host": ["{{base_url}}"],
+							"path": ["api", "cart-items"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Cart Items for User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response is an array', function () {",
+									"    const data = pm.response.json();",
+									"    pm.expect(Array.isArray(data)).to.be.true;",
+									"});",
+									"",
+									"pm.test('All items belong to requested user', function () {",
+									"    const items = pm.response.json();",
+									"    const uid = parseInt(pm.collectionVariables.get('user_id'));",
+									"    items.forEach(item => {",
+									"        pm.expect(item.userId).to.eql(uid);",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{user_id}}/cart-items",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "{{user_id}}", "cart-items"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Cart Item",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Cart item has required fields', function () {",
+									"    const item = pm.response.json();",
+									"    pm.expect(item).to.have.property('id');",
+									"    pm.expect(item).to.have.property('User');",
+									"    pm.expect(item).to.have.property('Product');",
+									"    pm.expect(item).to.have.property('quantity');",
+									"});",
+									"",
+									"pm.test('Quantity is within valid range (1-99)', function () {",
+									"    const item = pm.response.json();",
+									"    pm.expect(item.quantity).to.be.at.least(1);",
+									"    pm.expect(item.quantity).to.be.at.most(99);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/cart-items/{{cart_item_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "cart-items", "{{cart_item_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Cart Item Quantity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Quantity was updated to 5', function () {",
+									"    const item = pm.response.json();",
+									"    pm.expect(item.quantity).to.eql(5);",
+									"});",
+									"",
+									"pm.test('UpdatedAt timestamp is more recent', function () {",
+									"    const item = pm.response.json();",
+									"    pm.expect(new Date(item.updatedAt).getTime()).to.be.at.least(new Date(item.createdAt).getTime());",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quantity\": 5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/cart-items/{{cart_item_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "cart-items", "{{cart_item_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove from Cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response confirms deletion', function () {",
+									"    const res = pm.response.json();",
+									"    pm.expect(res).to.have.property('message');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/cart-items/{{cart_item_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "cart-items", "{{cart_item_id}}"]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Cart item tests -- run after users and products are created"
+		},
+		{
+			"name": "3. Cleanup",
+			"item": [
+				{
+					"name": "Delete User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response confirms deletion', function () {",
+									"    const res = pm.response.json();",
+									"    pm.expect(res).to.have.property('message');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{user_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "{{user_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response confirms deletion', function () {",
+									"    const res = pm.response.json();",
+									"    pm.expect(res).to.have.property('message');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/products/{{product_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "products", "{{product_id}}"]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Delete test data last -- after cart items are done"
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "product_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "cart_item_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
