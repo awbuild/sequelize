@@ -6,10 +6,10 @@ A REST API built with Express, Sequelize, and PostgreSQL. Manages users, product
 
 ## Tech Stack
 
-Node.js
-Express
-Sequelize
-PostgreSQL
+- Node.js
+- Express
+- Sequelize
+- PostgreSQL
 
 ---
 
